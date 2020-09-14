@@ -6,7 +6,7 @@ resolvers="/root/recon/dnsvalidator/resolvers.txt"
 
 domain_enum(){
 
-mkdir -p $domain $domain/sources $domain/Recon $domain/Recon/nuclei $domain/Recon/URLs $domain/Recon/Gf-Patterns
+mkdir -p $domain $domain/sources $domain/Recon $domain/Recon/nuclei $domain/Recon/URLs $domain/Recon/Gf-Patterns $domain/Recon/PortScan $domain/Recon/jaeles
 
 subfinder -d $domain -o $domain/sources/subfinder.txt
 assetfinder -subs-only $domain | tee $domain/sources/assetfinder.txt
@@ -41,17 +41,11 @@ rm $domain/Recon/URLs/vaild-temp.txt
 }
 vaild_url
 
-Gf-Patterns(){
-gf xss $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/xss.txt
-gf sqli $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/sqli.txt
-gf lfi $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/lfi.txt
-gf ssrf $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/ssrf.txt
-gf redirect $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/redirect.txt
-gf idor $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/idor.txt
-gf rce $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/rce.txt
+nmap_scan(){
+nmap --script vuln -iL $domain/domains.txt -oX $domain/Recon/PortScan/Port.xml
+xsltproc $domain/Recon/PortScan/Port.xml -o $domain/Recon/PortScan/port.html
 }
-Gf-Patterns
-
+nmap_scan
 
 subdomain_takeover(){
 subjack -w $domain/sources/all.txt -t 20 -ssl -c ~/go/src/github.com/haccer/subjack/fingerprints.json -v 3 -o $domain/Recon/subjack.txt
@@ -70,6 +64,16 @@ knockpy $domain
 }
 knockpy_scan
 
+Gf-Patterns(){
+gf xss $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/xss.txt
+gf sqli $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/sqli.txt
+gf lfi $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/lfi.txt
+gf ssrf $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/ssrf.txt
+gf redirect $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/redirect.txt
+gf idor $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/idor.txt
+gf rce $domain/Recon/URLs/vaild.txt | tee $domain/Recon/Gf-Patterns/rce.txt
+}
+Gf-Patterns
 
 nuclei_vul(){
 cat $domain/Recon/httpx.txt | nuclei -t /root/nuclei-templates/cves -o $domain/Recon/nuclei/cves.txt
@@ -87,3 +91,13 @@ cat $domain/Recon/httpx.txt | nuclei -t /root/nuclei-templates/generic-detection
 }
 nuclei_vul
 
+jaeles_scan(){
+cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/cves -L 50 -v -o $domain/Recon/jaeles/cve.txt
+cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/common -L 50 -v -o $domain/Recon/jaeles/common.txt
+cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/fuzz -L 50 -v -o $domain/Recon/jaeles/fuzz.txt
+cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/mics -L 50 -v -o $domain/Recon/jaeles/mics.txt
+cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/passives -L 50 -v -o $domain/Recon/jaeles/passives.txt
+cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/probe -L 50 -v -o $domain/Recon/jaeles/probe.txt
+cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/sensitive -L 50 -v -o $domain/Recon/jaeles/sensitive.txt
+}
+jaeles_scan
