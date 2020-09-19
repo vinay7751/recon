@@ -6,7 +6,7 @@ resolvers="/root/recon/dnsvalidator/resolvers.txt"
 
 domain_enum(){
 
-mkdir -p $domain $domain/sources $domain/Recon $domain/Recon/nuclei $domain/Recon/URLs $domain/Recon/Gf-Patterns $domain/Recon/PortScan $domain/Recon/jaeles
+mkdir -p $domain $domain/sources $domain/Recon $domain/Recon/nuclei $domain/Recon/URLs $domain/Recon/Gf-Patterns $domain/Recon/PortScan $domain/Recon/jaeles $domain/Recon/js/
 
 subfinder -d $domain -o $domain/sources/subfinder.txt
 assetfinder -subs-only $domain | tee $domain/sources/assetfinder.txt
@@ -40,6 +40,14 @@ cat $domain/Recon/URLs/vaild-temp.txt | grep http | awk -F "," '{print $1}' >> $
 rm $domain/Recon/URLs/vaild-temp.txt
 }
 vaild_url
+
+js_file(){
+cat $domain/Recon/httpx.txt | gau | grep ".js$" | uniq | sort >> $domain/Recon/js/jsfile_links.txt
+cat $domain/Recon/httpx.txt | subjs >> $domain/Recon/js/jsfile_links.txt
+cat $domain/Recon/js/jsfile_links.txt | hakcheckurl | grep "200" | cut -d" " -f2 | sort -u > $domain/Recon/js/live_jsfile_links.txt
+cat $domain/Recon/js/live_jsfile_links.txt | while read url;do python3 /root/recon/secretfinder/SecretFinder.py -i $url -o cli >> $domain/Recon/js/jsSecrete.txt ;done 
+}
+js_file
 
 nmap_scan(){
 nmap --script vuln -iL $domain/domains.txt -oX $domain/Recon/PortScan/Port.xml
