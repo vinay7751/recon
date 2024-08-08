@@ -108,4 +108,4 @@ cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/passiv
 cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/probe -L 50 -v -o $domain/Recon/jaeles/probe.txt
 cat $domain/Recon/httpx.txt | jaeles scan -c 50 -s /tmp/jaeles-signatures/sensitive -L 50 -v -o $domain/Recon/jaeles/sensitive.txt
 }
-jaeles_sca
+jaeles_scan
